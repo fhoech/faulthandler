@@ -387,7 +387,13 @@ faulthandler_exc_handler(struct _EXCEPTION_POINTERS *exc_info)
     const int fd = fatal_error.fd;
     DWORD code = exc_info->ExceptionRecord->ExceptionCode;
 
-    PUTS(fd, "Windows exception: ");
+    /* bpo-30557: only log fatal exceptions */
+    if (!(code & 0x80000000)) {
+        /* call the next exception handler */
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+
+    PUTS(fd, "Windows fatal exception: ");
     switch (code)
     {
     /* only format most common errors */
